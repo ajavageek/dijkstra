@@ -3,30 +3,32 @@ package ch.frankel.blog.dijkstra
 class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
 
     fun findShortestPath(start: String, end: String): Int {
-        val (_, paths) = recurseFindShortestPath(start, end, mapOf())
+        val (_, paths) = recurseFindShortestPath(NodePaths(start), end)
         return paths.getValue(end)
     }
 
-    private tailrec fun recurseFindShortestPath(node: String, end: String, paths: Map<String, Int>): Pair<String, Map<String, Int>> {
-        return if (node == end) end to paths
+    private tailrec fun recurseFindShortestPath(nodePaths: NodePaths, end: String): NodePaths {
+        return if (nodePaths.node == end) NodePaths(end, nodePaths.paths)
         else {
-            val updatedPaths = updatePaths(node, paths)
+            val updatedPaths = updatePaths(nodePaths)
             val nextNode = updatedPaths.minBy { it.value }?.key
                 ?: throw RuntimeException("Map was empty, this cannot happen with a non-empty graph")
-            recurseFindShortestPath(nextNode, end, updatedPaths)
+            recurseFindShortestPath(NodePaths(nextNode, updatedPaths), end)
         }
     }
 
-    private fun updatePaths(node: String, paths: Map<String, Int>) = (weightedPaths[node]
-        ?.map { updatePath(paths, it, node) }
-        ?.fold(emptyMap()) { acc, item -> acc + item } ?: emptyMap<String, Int>()) - node
+    private fun updatePaths(nodePaths: NodePaths) = (weightedPaths[nodePaths.node]
+        ?.map { updatePath(nodePaths, it) }
+        ?.fold(emptyMap()) { acc, item -> acc + item.paths } ?: emptyMap<String, Int>()) - nodePaths.node
 
-    private fun updatePath(paths: Map<String, Int>, entry: Map.Entry<String, Int>, node: String): Map<String, Int> {
-        val currentDistance = paths.getOrDefault(entry.key, Integer.MAX_VALUE)
-        val newDistance = entry.value + paths.getOrDefault(node, 0)
+    private fun updatePath(nodePaths: NodePaths, entry: Map.Entry<String, Int>): NodePaths {
+        val currentDistance = nodePaths.paths.getOrDefault(entry.key, Integer.MAX_VALUE)
+        val newDistance = entry.value + nodePaths.paths.getOrDefault(nodePaths.node, 0)
         return if (newDistance < currentDistance)
-            paths + (entry.key to newDistance)
+            nodePaths.copy(paths = nodePaths.paths + (entry.key to newDistance))
         else
-            paths
+            nodePaths.copy(paths = nodePaths.paths)
     }
 }
+
+data class NodePaths(val node: String, val paths: Map<String, Int> = emptyMap())
