@@ -10,16 +10,21 @@ class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
     private tailrec fun recurseFindShortestPath(node: String, end: String, paths: MutableMap<String, Int>): Pair<String, MutableMap<String, Int>> {
         return if (node == end) end to paths
         else {
-            weightedPaths[node]?.forEach {
-                val currentDistance = paths.getOrDefault(it.key, Integer.MAX_VALUE)
-                val newDistance = it.value + paths.getOrDefault(node, 0)
-                if (newDistance < currentDistance)
-                    paths[it.key] = newDistance
-            }
-            paths.remove(node)
+            val updatedPaths = updatePaths(node, paths)
             val nextNode = paths.minBy { it.value }?.key
                 ?: throw RuntimeException("Map was empty, this cannot happen with a non-empty graph")
-            recurseFindShortestPath(nextNode, end, paths)
+            recurseFindShortestPath(nextNode, end, updatedPaths)
         }
+    }
+
+    private fun updatePaths(node: String, paths: MutableMap<String, Int>): MutableMap<String, Int> {
+        weightedPaths[node]?.forEach {
+            val currentDistance = paths.getOrDefault(it.key, Integer.MAX_VALUE)
+            val newDistance = it.value + paths.getOrDefault(node, 0)
+            if (newDistance < currentDistance)
+                paths[it.key] = newDistance
+        }
+        paths.remove(node)
+        return paths
     }
 }
