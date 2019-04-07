@@ -3,13 +3,12 @@ package ch.frankel.blog.dijkstra
 class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
 
     fun findShortestPath(start: String, end: String): Int {
-        val paths = mutableMapOf<String, Int>()
-        recurseFindShortestPath(start, end, paths)
+        val (_, paths) = recurseFindShortestPath(start, end, mutableMapOf())
         return paths.getValue(end)
     }
 
-    private tailrec fun recurseFindShortestPath(node: String, end: String, paths: MutableMap<String, Int>): String {
-        return if (node == end) end
+    private tailrec fun recurseFindShortestPath(node: String, end: String, paths: MutableMap<String, Int>): Pair<String, MutableMap<String, Int>> {
+        return if (node == end) end to paths
         else {
             weightedPaths[node]?.forEach {
                 val currentDistance = paths.getOrDefault(it.key, Integer.MAX_VALUE)
