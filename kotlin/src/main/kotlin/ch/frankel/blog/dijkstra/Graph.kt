@@ -17,13 +17,9 @@ class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
         }
     }
 
-    private fun updatePaths(node: String, paths: Map<String, Int>): Map<String, Int> {
-        var updatedPaths = paths
-        weightedPaths[node]?.forEach {
-            updatedPaths = updatedPaths + updatePath(paths, it, node)
-        }
-        return updatedPaths - node
-    }
+    private fun updatePaths(node: String, paths: Map<String, Int>) = (weightedPaths[node]
+        ?.map { updatePath(paths, it, node) }
+        ?.fold(emptyMap()) { acc, item -> acc + item } ?: emptyMap<String, Int>()) - node
 
     private fun updatePath(paths: Map<String, Int>, entry: Map.Entry<String, Int>, node: String): Map<String, Int> {
         val currentDistance = paths.getOrDefault(entry.key, Integer.MAX_VALUE)
