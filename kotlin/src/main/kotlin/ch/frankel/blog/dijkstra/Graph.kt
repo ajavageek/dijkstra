@@ -20,11 +20,17 @@ class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
     private fun updatePaths(node: String, paths: Map<String, Int>): Map<String, Int> {
         var updatedPaths = paths
         weightedPaths[node]?.forEach {
-            val currentDistance = paths.getOrDefault(it.key, Integer.MAX_VALUE)
-            val newDistance = it.value + paths.getOrDefault(node, 0)
-            if (newDistance < currentDistance)
-                updatedPaths = updatedPaths + (it.key to newDistance)
+            updatedPaths = updatedPaths + updatePath(paths, it, node)
         }
         return updatedPaths - node
+    }
+
+    private fun updatePath(paths: Map<String, Int>, entry: Map.Entry<String, Int>, node: String): Map<String, Int> {
+        val currentDistance = paths.getOrDefault(entry.key, Integer.MAX_VALUE)
+        val newDistance = entry.value + paths.getOrDefault(node, 0)
+        return if (newDistance < currentDistance)
+            paths + (entry.key to newDistance)
+        else
+            paths
     }
 }
