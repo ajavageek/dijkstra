@@ -13,14 +13,14 @@ class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
     }
 
     private fun updateShortestPath(node: String): String {
-        val subGraph = weightedPaths[node]
-        for (entry in subGraph!!) {
-            val currentDistance = evaluatedPaths.getOrDefault(entry.key, Integer.MAX_VALUE)
-            val newDistance = entry.value + evaluatedPaths.getOrDefault(node, 0)
+        weightedPaths[node]?.forEach {
+            val currentDistance = evaluatedPaths.getOrDefault(it.key, Integer.MAX_VALUE)
+            val newDistance = it.value + evaluatedPaths.getOrDefault(node, 0)
             if (newDistance < currentDistance)
-                evaluatedPaths[entry.key] = newDistance
+                evaluatedPaths[it.key] = newDistance
         }
         evaluatedPaths.remove(node)
-        return evaluatedPaths.minBy { it.value }?.key!!
+        return evaluatedPaths.minBy { it.value }?.key
+            ?: throw RuntimeException("Map was empty, this cannot happen with a non-empty graph")
     }
 }
