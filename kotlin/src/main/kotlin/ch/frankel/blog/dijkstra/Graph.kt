@@ -11,15 +11,15 @@ class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
         return if (nodePaths.node == end) NodePaths(end, nodePaths.paths)
         else {
             val updatedPaths = updatePaths(nodePaths)
-            val nextNode = updatedPaths.minBy { it.value }?.key
+            val nextNode = updatedPaths.paths.minBy { it.value }?.key
                 ?: throw RuntimeException("Map was empty, this cannot happen with a non-empty graph")
-            recurseFindShortestPath(NodePaths(nextNode, updatedPaths), end)
+            recurseFindShortestPath(NodePaths(nextNode, updatedPaths.paths), end)
         }
     }
 
     private fun updatePaths(nodePaths: NodePaths) = (weightedPaths[nodePaths.node]
         ?.map { nodePaths.updatePath(it) }
-        ?.fold(emptyMap()) { acc, item -> acc + item.paths } ?: emptyMap<String, Int>()) - nodePaths.node
+        ?.fold(nodePaths.copy()) { acc, item -> acc + item } ?: nodePaths.copy()) - nodePaths.node
 
 }
 
@@ -32,5 +32,14 @@ data class NodePaths(val node: String, val paths: Map<String, Int> = emptyMap())
             copy(paths = paths + (entry.key to newDistance))
         else
             copy(paths = paths)
+    }
+
+    operator fun plus(other: NodePaths): NodePaths {
+        if (node != other.node) throw RuntimeException("Not possible to merge NodePaths with different nodes")
+        return copy(paths = paths + other.paths)
+    }
+
+    operator fun minus(node: String): NodePaths {
+        return copy(paths = paths - node)
     }
 }
