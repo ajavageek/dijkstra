@@ -18,17 +18,19 @@ class Graph(private val weightedPaths: Map<String, Map<String, Int>>) {
     }
 
     private fun updatePaths(nodePaths: NodePaths) = (weightedPaths[nodePaths.node]
-        ?.map { updatePath(nodePaths, it) }
+        ?.map { nodePaths.updatePath(it) }
         ?.fold(emptyMap()) { acc, item -> acc + item.paths } ?: emptyMap<String, Int>()) - nodePaths.node
 
-    private fun updatePath(nodePaths: NodePaths, entry: Map.Entry<String, Int>): NodePaths {
-        val currentDistance = nodePaths.paths.getOrDefault(entry.key, Integer.MAX_VALUE)
-        val newDistance = entry.value + nodePaths.paths.getOrDefault(nodePaths.node, 0)
-        return if (newDistance < currentDistance)
-            nodePaths.copy(paths = nodePaths.paths + (entry.key to newDistance))
-        else
-            nodePaths.copy(paths = nodePaths.paths)
-    }
 }
 
-data class NodePaths(val node: String, val paths: Map<String, Int> = emptyMap())
+data class NodePaths(val node: String, val paths: Map<String, Int> = emptyMap()) {
+
+    fun updatePath(entry: Map.Entry<String, Int>): NodePaths {
+        val currentDistance = paths.getOrDefault(entry.key, Integer.MAX_VALUE)
+        val newDistance = entry.value + paths.getOrDefault(node, 0)
+        return if (newDistance < currentDistance)
+            copy(paths = paths + (entry.key to newDistance))
+        else
+            copy(paths = paths)
+    }
+}
